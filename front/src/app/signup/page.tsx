@@ -44,7 +44,7 @@ export default function SignupPage() {
       const recaptchaToken = await executeRecaptcha('signup');
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/signup`;
       
-      await axios.post(apiUrl, { ...formData, recaptcha_token: recaptchaToken });
+      await axios.post(apiUrl, { ...formData, recaptcha_token: recaptchaToken }, { withCredentials: true });
 
       setSuccessMessage('Registration successful! Please check your email to verify your account.');
       // Optionally redirect after a few seconds
