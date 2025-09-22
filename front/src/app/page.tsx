@@ -39,7 +39,7 @@ const SignupPage = () => {
       // Add token to payload
       const payload = { ...formData, recaptcha_token: token };
 
-      const res = await fetch("https://django-backend-777268942678.asia-south1.run.app/api/signup", {
+      const res = await fetch("https://django-backend1-777268942678.asia-south2.run.app/api/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
