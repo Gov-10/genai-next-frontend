@@ -25,37 +25,85 @@ export default function SignupPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // const handleSubmit = async (e: FormEvent) => {
+  //   e.preventDefault();
+  //   setError('');
+  //   setSuccessMessage('');
+
+  //   if (formData.password1 !== formData.password2) {
+  //     setError("Passwords don't match");
+  //     return;
+  //   }
+
+  //   if (!executeRecaptcha) {
+  //     setError('reCAPTCHA not ready');
+  //     return;
+  //   }
+
+  //   try {
+  //     const recaptchaToken = await executeRecaptcha('signup');
+  //     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/signup`;
+      
+  //     await axios.post(apiUrl, { ...formData, recaptcha_token: recaptchaToken }, { withCredentials: true , headers: { "Content-Type": "application/json" },});
+
+  //     setSuccessMessage('Registration successful! Please check your email to verify your account.');
+  //     // Optionally redirect after a few seconds
+  //     setTimeout(() => router.push('/login'), 5000);
+      
+  //   } catch (err: any) {
+  //     const errorMessage = err.response?.data?.error || err.response?.data[0]?.msg || 'An unknown error occurred.';
+  //     setError(errorMessage);
+  //   }
+  // };
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccessMessage('');
+  e.preventDefault();
+  setError('');
+  setSuccessMessage('');
 
-    if (formData.password1 !== formData.password2) {
-      setError("Passwords don't match");
-      return;
-    }
+  if (formData.password1 !== formData.password2) {
+    setError("Passwords don't match");
+    return;
+  }
 
-    if (!executeRecaptcha) {
-      setError('reCAPTCHA not ready');
-      return;
-    }
+  if (!executeRecaptcha) {
+    setError('reCAPTCHA not ready');
+    return;
+  }
 
-    try {
-      const recaptchaToken = await executeRecaptcha('signup');
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/signup`;
-      
-      await axios.post(apiUrl, { ...formData, recaptcha_token: recaptchaToken }, { withCredentials: true , headers: { "Content-Type": "application/json" },});
+  try {
+    const recaptchaToken = await executeRecaptcha('signup');
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/signup`;
 
-      setSuccessMessage('Registration successful! Please check your email to verify your account.');
-      // Optionally redirect after a few seconds
-      setTimeout(() => router.push('/login'), 5000);
-      
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.response?.data[0]?.msg || 'An unknown error occurred.';
-      setError(errorMessage);
-    }
-  };
+    // Extract CSRF token from cookie
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+    };
+    const csrfToken = getCookie('csrftoken');
 
+    await axios.post(
+      apiUrl,
+      { ...formData, recaptcha_token: recaptchaToken },
+      {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+        },
+      }
+    );
+
+    setSuccessMessage('Registration successful! Please check your email to verify your account.');
+    setTimeout(() => router.push('/login'), 5000);
+  } catch (err: any) {
+    const errorMessage =
+      err.response?.data?.error ||
+      err.response?.data[0]?.msg ||
+      'An unknown error occurred.';
+    setError(errorMessage);
+  }
+};
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-md">
